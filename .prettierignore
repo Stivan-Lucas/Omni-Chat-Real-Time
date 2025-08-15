@@ -1,0 +1,29 @@
+# Node modules
+node_modules
+
+# Build output / distribution
+dist
+
+# Prisma generated files
+prisma
+
+# Environment variables
+.env
+
+# Test coverage reports
+coverage
+
+# Git hooks
+.husky
+
+# Editor settings
+.vscode
+
+# Miscellaneous files
+*.json
+*.lock
+*.sql
+
+# Logs
+logs
+html
