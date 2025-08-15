@@ -1,5 +1,6 @@
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+// ./tests/swagger.test.ts
 import Fastify from 'fastify'
+import { describe, it, expect, beforeAll, afterAll } from 'vitest'
 import SwaggerPlugin from '../src/lib/swagger'
 
 let app: ReturnType<typeof Fastify>

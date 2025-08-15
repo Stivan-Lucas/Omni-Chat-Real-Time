@@ -1,42 +1,41 @@
-# Security Policy for Omni
+# **Política de Segurança do Omni**
 
-## Supported Versions
+## Versões Suportadas
 
-At Omni, we prioritize security in every aspect of our platform. We actively maintain and patch all supported versions of Omni. For security-related issues, please ensure you are using a supported version.
+No Omni, priorizamos a segurança em todos os aspectos da nossa plataforma. Mantemos e aplicamos correções ativamente em todas as versões suportadas do Omni. Para questões relacionadas à segurança, certifique-se de estar utilizando uma versão suportada.
 
-## Reporting a Vulnerability
+## Relatando uma Vulnerabilidade
 
-If you discover a potential security vulnerability in Omni, please report it responsibly. Do **not** post it publicly or share it with others until it has been addressed.  
+Se você descobrir uma possível vulnerabilidade de segurança no Omni, reporte-a de forma responsável. **Não** a publique ou compartilhe com outras pessoas até que tenha sido corrigida.
 
-### How to Report
+### Como Reportar
 
-- **Email:** security@omni.chat  
-- Include the following in your report:
-  - A clear description of the vulnerability
-  - Steps to reproduce
-  - Impact assessment (if known)
-  - Your contact information for follow-up
+- **E-mail:** [lucamargostivan@gmail.com](mailto:lucamargostivan@gmail.com)
+- Inclua as seguintes informações no seu relatório:
+  - Descrição clara da vulnerabilidade
+  - Passos para reproduzir o problema
+  - Avaliação do impacto (se conhecida)
+  - Suas informações de contato para acompanhamento
 
-We commit to responding to all security reports within **72 hours**.
+Comprometemo-nos a responder a todos os relatórios de segurança em até **72 horas**.
 
-## Security Best Practices
+## Boas Práticas de Segurança
 
-Omni is a real-time chat focused on security. Here are some of the measures we follow:  
+O Omni é um chat em tempo real focado em segurança. Aqui estão algumas das medidas que seguimos:
 
-- End-to-end encryption for messages
-- Strong authentication practices (JWT / OAuth2)
-- Regular dependency audits and updates
-- Secure coding practices and regular code reviews
-- Minimal data retention, following privacy-first principles
-- Monitoring and alerting for suspicious activities
+- Criptografia de ponta a ponta para mensagens
+- Práticas robustas de autenticação (JWT / OAuth2)
+- Auditoria e atualização regular de dependências
+- Práticas seguras de programação e revisões de código frequentes
+- Retenção mínima de dados, seguindo princípios de privacidade em primeiro lugar
+- Monitoramento e alertas para atividades suspeitas
 
-## Disclosure Policy
+## Política de Divulgação
 
-- Omni follows **responsible disclosure** principles.  
-- Security issues reported through proper channels will be acknowledged and resolved before public disclosure.  
-- If you publicly disclose a security issue without contacting us first, we may not be able to respond to or credit the report immediately.
+- O Omni segue os princípios de **divulgação responsável**.
+- Questões de segurança reportadas por canais adequados serão reconhecidas e corrigidas antes de qualquer divulgação pública.
+- Caso você divulgue publicamente uma vulnerabilidade sem nos contatar primeiro, talvez não possamos responder ou creditar o relatório imediatamente.
 
-## Acknowledgments
+## Agradecimentos
 
-We appreciate all security researchers and contributors who help make Omni safer for everyone.  
-
+Agradecemos a todos os pesquisadores de segurança e colaboradores que ajudam a tornar o Omni mais seguro para todos.

@@ -1,6 +1,6 @@
-# Lexis
+# **Omni**
 
-Lexis é um projeto SaaS com ERP para pequenas, médias e grandes empresas.
+**Chat em tempo real com segurança de nível empresarial, auditoria completa e criptografia ponta a ponta.**
 
 [![Fastify](https://img.shields.io/badge/Fastify-4.24.3-blue.svg?logo=fastify&logoColor=white)](https://fastify.dev/)
 [![Zod](https://img.shields.io/badge/Zod-3.22.4-ff69b4.svg?logo=zod&logoColor=white)](https://github.com/colinhacks/zod)
@@ -16,10 +16,10 @@ Lexis é um projeto SaaS com ERP para pequenas, médias e grandes empresas.
 [![bcrypt](https://img.shields.io/badge/bcrypt-5.1.1-yellow.svg?logo=lock&logoColor=black)](https://www.npmjs.com/package/bcrypt)
 [![AWS SDK](https://img.shields.io/badge/AWS_SDK-2.1519.0-FF9900.svg?logo=amazon-aws&logoColor=white)](https://aws.amazon.com/sdk-for-javascript/)
 
----
-
 [![Validate Code Quality](https://github.com/Stivan-Lucas/Omni-Chat-Real-Time/actions/workflows/lint.yml/badge.svg)](https://github.com/Stivan-Lucas/Omni-Chat-Real-Time/actions/workflows/lint.yml)
 [![Coverage](https://codecov.io/gh/Stivan-Lucas/Omni-Chat-Real-Time/branch/main/graph/badge.svg)](https://codecov.io/gh/Stivan-Lucas/Omni-Chat-Real-Time)
+
+> Desenvolvido para garantir comunicações seguras e confiáveis entre empresas, com foco total em proteção contra golpes e fraudes.
 
 ## Pré-requisitos
 

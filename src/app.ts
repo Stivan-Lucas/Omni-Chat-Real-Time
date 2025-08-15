@@ -1,3 +1,4 @@
+// src/app.ts
 import Fastify from 'fastify'
 import fastifyCors from '@fastify/cors'
 import {
@@ -14,6 +15,8 @@ import handleError from './modules/handleError.ts'
 
 import SwaggerPlugin from './lib/swagger.ts'
 import ScalarPlugin from './lib/scalar.ts'
+import AuthRoutes from './routes/auth.routes.ts'
+import UsersRoutes from './routes/users.routes.ts'
 
 export const app = Fastify({
   logger: loggerOptions,
@@ -28,5 +31,8 @@ app.register(handleError)
 await RateLimited(app)
 await SwaggerPlugin(app)
 await ScalarPlugin(app)
+
+await AuthRoutes(app)
+await UsersRoutes(app)
 
 app.ready()

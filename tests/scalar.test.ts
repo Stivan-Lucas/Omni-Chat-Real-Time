@@ -1,3 +1,4 @@
+// ./tests/scalar.test.ts
 import Fastify from 'fastify'
 import ScalarPlugin from '../src/lib/scalar'
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'

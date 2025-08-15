@@ -1,3 +1,4 @@
+// src/modules/rateLimit.ts
 import fastifyRateLimit from '@fastify/rate-limit'
 import type { FastifyInstance } from 'fastify'
 import { env } from '../config/environment.ts'

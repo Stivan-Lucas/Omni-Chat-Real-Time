@@ -1,3 +1,4 @@
+// src/lib/swagger.ts
 import fastifySwagger from '@fastify/swagger'
 import type { FastifyInstance } from 'fastify'
 import { jsonSchemaTransform } from 'fastify-type-provider-zod'

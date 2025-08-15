@@ -1,3 +1,4 @@
+// src/server.ts
 import { app } from './app.ts'
 import { env } from './config/environment.ts'
 import { Texts } from './constants/texts.ts'

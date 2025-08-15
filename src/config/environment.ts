@@ -1,3 +1,4 @@
+// src/config/environment.ts
 import { config } from '@dotenvx/dotenvx'
 import { z } from 'zod'
 import { Texts } from '../constants/texts.ts'
@@ -43,7 +44,9 @@ const envSchema = z.object({
 
   // JWT
   JWT_SECRET: z.string().min(32),
-  JWT_EXPIRES_ON: z.string(),
+  JWT_EXPIRES_IN: z.string(),
+  REFRESH_SECRET: z.string(),
+  REFRESH_EXPIRES_IN: z.string(),
 
   // Rate Limit
   RATE_LIMIT_MAX: z.coerce.number(),
@@ -52,6 +55,11 @@ const envSchema = z.object({
   RATE_LIMIT_CACHE: z.coerce.number(),
   RATE_LIMIT_NAMESPACE: z.string(),
   RATE_LIMIT_INFO_MESSAGE: z.string().optional(),
+
+  // Email
+  EMAIL_API_KEY: z.string(),
+  EMAIL_FROM: z.string(),
+  EMAIL_SEND_TYPE: z.string(),
 })
 
 const parseResult = envSchema.safeParse(process.env)

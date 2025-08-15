@@ -1,3 +1,4 @@
+// src/lib/scalar.ts
 import type { FastifyInstance } from 'fastify'
 import { env } from '../config/environment.ts'
 

@@ -1,17 +1,15 @@
+// src/modules/logger.ts
 import fs from 'fs'
 import path from 'path'
 import pino, { type LoggerOptions } from 'pino'
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import { env } from '../config/environment.ts'
 
-// --- Garantir que o diretório de logs existe ---
 const logDir = path.resolve(env.LOG_DIR)
 if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true })
 
-// --- Detecta ambiente ---
 const isDev = env.NODE_ENV === 'development'
 
-// --- Serializers ---
 const reqSerializer = (req: FastifyRequest) => ({
   method: req.method,
   url: req.url,
@@ -29,7 +27,6 @@ const serializers = {
   err: pino.stdSerializers.err,
 }
 
-// --- Paths a serem redatados ---
 const redactPaths = env.LOG_REDACT_PATHS
   ? env.LOG_REDACT_PATHS.split(',').map((p) => p.trim())
   : [
@@ -39,7 +36,6 @@ const redactPaths = env.LOG_REDACT_PATHS
       '*.password',
     ]
 
-// --- Transportes ---
 const devTransport = {
   targets: [
     {
@@ -90,7 +86,6 @@ const prodTransport = {
   ],
 }
 
-// --- LoggerOptions final ---
 export const loggerOptions: LoggerOptions = {
   level: env.LOG_LEVEL,
   serializers,
