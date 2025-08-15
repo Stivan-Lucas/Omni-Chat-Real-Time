@@ -35,9 +35,9 @@
     "lint": "eslint ./src --ext .js,.ts,.mjs,.cjs --report-unused-disable-directives --max-warnings 0",
     "format": "prettier ./src --check && prettier ./src --write",
     "format:check": "npx prettier ./src --check",
-    "test": "vitest",
-    "test:watch": "vitest --watch",
-    "test:coverage": "vitest run --coverage",
+    "test": "dotenvx run -f .env.test -- vitest",
+    "test:watch": "dotenvx run -f .env.test -- vitest --watch",
+    "test:coverage": "dotenvx run -f .env.test -- vitest run --coverage",
     "test:coverage:html": "vitest run --coverage --reporter=html",
     "prepare": "husky"
   },
