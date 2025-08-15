@@ -2,6 +2,11 @@ import { config } from '@dotenvx/dotenvx'
 import { z } from 'zod'
 import { Texts } from '../constants/texts.ts'
 
+config({
+  path: process.env.NODE_ENV === 'test' ? '.env.test' : '.env',
+  override: true,
+})
+
 const envSchema = z.object({
   // Server
   HOST: z.string(),
@@ -59,8 +64,3 @@ if (!parseResult.success) {
 
 export const env = parseResult.data
 export type Env = z.infer<typeof envSchema>
-
-config({
-  path: env.NODE_ENV === 'test' ? '.env.test' : '.env',
-  override: true,
-})
