@@ -26,8 +26,5 @@ CREATE TABLE "public"."RefreshToken" (
 -- CreateIndex
 CREATE UNIQUE INDEX "User_email_key" ON "public"."User"("email");
 
--- CreateIndex
-CREATE UNIQUE INDEX "RefreshToken_token_key" ON "public"."RefreshToken"("token");
-
 -- AddForeignKey
 ALTER TABLE "public"."RefreshToken" ADD CONSTRAINT "RefreshToken_userId_fkey" FOREIGN KEY ("userId") REFERENCES "public"."User"("id") ON DELETE CASCADE ON UPDATE CASCADE;

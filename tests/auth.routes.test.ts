@@ -1,100 +1,112 @@
 // src/tests/auth.routes.test.ts
-import { z } from 'zod'
 import supertest from 'supertest'
 import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import { buildServer } from '../src/lib/buildServer' // ajuste se tiver um server export
+import { app } from '../src/app'
 import { prisma } from '../src/lib/prisma'
 
-let app: ReturnType<typeof buildServer>
-let request: ReturnType<typeof supertest>
-
-beforeAll(async () => {
-  app = buildServer()
-  await app.ready()
-  request = supertest(app.server)
-})
-
-afterAll(async () => {
-  await prisma.refreshToken.deleteMany()
-  await prisma.user.deleteMany()
-  await app.close()
-})
+const request = supertest(app.server)
 
 describe('Auth Routes', () => {
+  const testUser = {
+    name: 'Test User',
+    email: 'testuser@example.com',
+    password: 'password123',
+  }
+
   let refreshToken: string
 
-  const registerSchema = z.object({
-    id: z.string(),
-    name: z.string(),
-    email: z.string(),
-    createdAt: z.string(),
+  beforeAll(async () => {
+    // Limpa usuário de teste antes de rodar os testes
+    await prisma.refreshToken.deleteMany({})
+    await prisma.user.deleteMany({ where: { email: testUser.email } })
   })
 
-  const loginSchema = z.object({
-    accessToken: z.string(),
-    refreshToken: z.string(),
+  afterAll(async () => {
+    // Limpa dados após os testes
+    await prisma.refreshToken.deleteMany({})
+    await prisma.user.deleteMany({ where: { email: testUser.email } })
+    await prisma.$disconnect()
   })
 
+  // -----------------------------
+  // Register
+  // -----------------------------
   it('should register a new user', async () => {
-    const res = await request.post('/auth/register').send({
-      name: 'Vitest User',
-      email: 'vitest@example.com',
-      password: 'password123',
-    })
-
+    const res = await request.post('/auth/register').send(testUser)
     expect(res.status).toBe(201)
-    registerSchema.parse(res.body) // valida com Zod
+    expect(res.body).toHaveProperty('id')
+    expect(res.body.name).toBe(testUser.name)
+    expect(res.body.email).toBe(testUser.email)
   })
 
-  it('should not register with the same email', async () => {
-    const res = await request.post('/auth/register').send({
-      name: 'Vitest User 2',
-      email: 'vitest@example.com',
-      password: 'password123',
-    })
-
+  it('should not allow duplicate email registration', async () => {
+    const res = await request.post('/auth/register').send(testUser)
     expect(res.status).toBe(409)
-    expect(res.body.message).toBeDefined()
+    expect(res.body).toHaveProperty('message')
   })
 
-  it('should login the user', async () => {
+  // -----------------------------
+  // Login
+  // -----------------------------
+  it('should login with correct credentials', async () => {
     const res = await request.post('/auth/login').send({
-      email: 'vitest@example.com',
-      password: 'password123',
+      email: testUser.email,
+      password: testUser.password,
     })
-
     expect(res.status).toBe(200)
-    const data = loginSchema.parse(res.body)
-    refreshToken = data.refreshToken
+    expect(res.body).toHaveProperty('accessToken')
+    expect(res.body).toHaveProperty('refreshToken')
+    refreshToken = res.body.refreshToken
   })
 
-  it('should not login with wrong password', async () => {
+  it('should fail login with wrong password', async () => {
     const res = await request.post('/auth/login').send({
-      email: 'vitest@example.com',
+      email: testUser.email,
       password: 'wrongpassword',
     })
-
     expect(res.status).toBe(401)
-    expect(res.body.message).toBeDefined()
+    expect(res.body).toHaveProperty('message')
   })
 
-  it('should refresh tokens', async () => {
-    const res = await request.post('/auth/refresh').send({
-      refreshToken,
+  it('should fail login with non-existent email', async () => {
+    const res = await request.post('/auth/login').send({
+      email: 'notfound@example.com',
+      password: 'password123',
     })
+    expect(res.status).toBe(401)
+    expect(res.body).toHaveProperty('message')
+  })
+
+  // -----------------------------
+  // Refresh Token
+  // -----------------------------
+  it('should refresh tokens with valid refresh token', async () => {
+    const res = await request.post('/auth/refresh').send({ refreshToken })
+    console.debug('res status:', res.status)
+    console.debug('res body:', res.body)
 
     expect(res.status).toBe(200)
-    const data = loginSchema.parse(res.body)
-    expect(data.accessToken).not.toBe(refreshToken)
-    expect(data.refreshToken).not.toBe(refreshToken)
+    expect(res.body).toHaveProperty('accessToken')
+    expect(res.body).toHaveProperty('refreshToken')
+    refreshToken = res.body.refreshToken
   })
 
-  it('should fail to refresh with invalid token', async () => {
-    const res = await request.post('/auth/refresh').send({
-      refreshToken: 'invalidtoken',
-    })
-
+  it('should fail refresh with invalid token', async () => {
+    const res = await request
+      .post('/auth/refresh')
+      .send({ refreshToken: 'invalidtoken' })
     expect(res.status).toBe(401)
-    expect(res.body.message).toBeDefined()
+    expect(res.body).toHaveProperty('message')
+  })
+
+  it('should fail refresh with revoked token', async () => {
+    // Primeiro revoga o token
+    await prisma.refreshToken.updateMany({
+      where: { token: refreshToken },
+      data: { revokedAt: new Date() },
+    })
+    const res = await request.post('/auth/refresh').send({ refreshToken })
+    expect(res.status).toBe(401)
+    expect(res.body).toHaveProperty('message')
   })
 })

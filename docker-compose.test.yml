@@ -3,26 +3,21 @@ version: '3.9'
 services:
   postgres:
     image: postgres:17.5-alpine
-    container_name: omni_postgres
+    container_name: omni_postgres_test
     restart: always
     ports:
-      - '${POSTGRES_PORT:-7458}:5432'
+      - '${POSTGRES_PORT}:5432'
     env_file:
-      - .env
+      - .env.test
     environment:
-      POSTGRES_USER: ${POSTGRES_USER:-postgres}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
-      POSTGRES_DB: ${POSTGRES_DB:-mydb}
+      POSTGRES_USER: ${POSTGRES_USER:-dev_user}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dev_password}
+      POSTGRES_DB: ${POSTGRES_DB:-omni_test}
       TZ: America/Sao_Paulo
     volumes:
-      - postgres_data:/var/lib/postgresql/data
+      - postgres_test_data:/var/lib/postgresql/data
     networks:
       - omni_network
-    deploy:
-      resources:
-        limits:
-          cpus: '2.0'
-          memory: 2G
     healthcheck:
       test: ['CMD-SHELL', 'pg_isready -U ${POSTGRES_USER}']
       interval: 10s
@@ -32,17 +27,12 @@ services:
 
   redis:
     image: redis:7-alpine
-    container_name: omni_redis
+    container_name: omni_redis_test
     restart: always
     ports:
-      - '${REDIS_PORT:-2546}:6379'
+      - '${REDIS_PORT}:6379' # porta do host -> porta do container
     networks:
       - omni_network
-    deploy:
-      resources:
-        limits:
-          cpus: '2.0'
-          memory: 2G
     healthcheck:
       test: ['CMD', 'redis-cli', 'ping']
       interval: 10s
@@ -51,7 +41,7 @@ services:
       start_period: 10s
 
 volumes:
-  postgres_data:
+  postgres_test_data:
 
 networks:
   omni_network:

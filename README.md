@@ -12,9 +12,6 @@
 [![Scalar](https://img.shields.io/badge/Scalar-1.20.31-orange.svg?logo=swagger&logoColor=white)](https://scalar.com/)
 [![Redis](https://img.shields.io/badge/Redis-4.6.11-D82C20.svg?logo=redis&logoColor=white)](https://redis.io/)
 [![Socket.io](https://img.shields.io/badge/Socket.io-4.7.4-black.svg?logo=socketdotio&logoColor=white)](https://socket.io/)
-[![Mailgun](https://img.shields.io/badge/Mailgun.js-9.4.1-CF2C1D.svg?logo=mailgun&logoColor=white)](https://www.mailgun.com/)
-[![bcrypt](https://img.shields.io/badge/bcrypt-5.1.1-yellow.svg?logo=lock&logoColor=black)](https://www.npmjs.com/package/bcrypt)
-[![AWS SDK](https://img.shields.io/badge/AWS_SDK-2.1519.0-FF9900.svg?logo=amazon-aws&logoColor=white)](https://aws.amazon.com/sdk-for-javascript/)
 
 [![Validate Code Quality](https://github.com/Stivan-Lucas/Omni-Chat-Real-Time/actions/workflows/lint.yml/badge.svg)](https://github.com/Stivan-Lucas/Omni-Chat-Real-Time/actions/workflows/lint.yml)
 [![Coverage](https://codecov.io/gh/Stivan-Lucas/Omni-Chat-Real-Time/branch/main/graph/badge.svg)](https://codecov.io/gh/Stivan-Lucas/Omni-Chat-Real-Time)
@@ -60,7 +57,7 @@ cp .env.example .env
 ### 5. Subir os containers com Docker Compose
 
 ```bash
-docker compose -f docker-compose.yml up -d --build
+docker-compose -f docker-compose.yml --env-file .env -p omni_dev up -d
 ```
 
 Este comando irá subir o PostgreSQL, Redis e demais serviços necessários.
@@ -68,8 +65,7 @@ Este comando irá subir o PostgreSQL, Redis e demais serviços necessários.
 ### 6. Rodar as migrations do banco com Prisma
 
 ```bash
-npx prisma generate
-npx prisma migrate deploy
+npx prisma generate && npx prisma migrate deploy
 ```
 
 > **Importante:** O comando prisma generate gera o cliente Prisma a partir do schema, certifique-se de rodá-lo sempre que modificar o schema.
@@ -88,14 +84,61 @@ npm run build && npm run start
 npm run dev
 ```
 
-## Scripts úteis
+Perfeito! Podemos organizar seu README na seção de testes de forma clara, mostrando como configurar o banco e executar os diferentes comandos. Aqui está uma sugestão ajustada:
 
-| Comando               | Descrição                                            |
-| --------------------- | ---------------------------------------------------- |
-| `npm run start`       | Executa o servidor em produção                       |
-| `npm run dev`         | Executa o servidor em desenvolvimento com hot reload |
-| `npm run test`        | Executa os testes automatizados                      |
-| `docker compose down` | Para e remove os containers Docker                   |
+---
+
+### 8. Rodar os testes
+
+Antes de rodar os testes, você precisa criar o banco de dados de testes. Certifique-se de ter um arquivo `.env.test` configurado e ajuste as portas se necessário.
+
+```bash
+docker-compose -f docker-compose.test.yml --env-file .env.test -p omni_test up -d
+```
+
+#### Scripts de teste
+
+O projeto utiliza `vitest` e `prisma`. Os seguintes scripts estão disponíveis no `package.json`:
+
+- **Rodar todos os testes**
+
+```bash
+npm run test
+```
+
+Gera os clientes Prisma, aplica as migrations e executa os testes.
+
+- **Rodar testes em modo watch**
+
+```bash
+npm run test:watch
+```
+
+Roda os testes continuamente, reiniciando quando há mudanças no código.
+
+- **Resetar o banco de testes**
+
+```bash
+npm run test:reset
+```
+
+Reseta o banco de dados de testes, aplicando novamente todas as migrations.
+
+- **Gerar cobertura de testes**
+
+```bash
+npm run test:coverage
+```
+
+Roda os testes e gera relatórios de cobertura.
+
+- **Cobertura em HTML**
+
+```bash
+npm run test:coverage:html
+```
+
+Gera o relatório de cobertura em HTML, que pode ser aberto no navegador.
 
 ## Contribuindo
 

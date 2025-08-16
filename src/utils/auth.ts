@@ -1,12 +1,11 @@
 // src/utils/auth.ts
 import jwt, { type SignOptions } from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
-import { authConfig } from '../config/auth.ts'
 import type { JwtPayload } from '../types/auth.ts'
-import { prisma } from '../lib/prisma.ts'
+import { env } from '../config/environment.ts'
 
 // Função utilitária para converter expiresIn em segundos (compatível com SignOptions)
-function toJwtExpiresIn(envValue: string): number {
+export function toJwtExpiresIn(envValue: string): number {
   const unit = envValue.slice(-1) // Pega a unidade (d, h, m, s)
   const value = parseInt(envValue.slice(0, -1), 10) || 7 // Valor numérico (fallback: 7)
 
@@ -27,27 +26,27 @@ function toJwtExpiresIn(envValue: string): number {
 // Gera access token (7d)
 export function signAccessToken(payload: JwtPayload): string {
   const options: SignOptions = {
-    expiresIn: toJwtExpiresIn(authConfig.jwtExpiresIn),
+    expiresIn: toJwtExpiresIn(env.JWT_EXPIRES_IN),
   }
-  return jwt.sign(payload as object, authConfig.jwtSecret, options)
+  return jwt.sign(payload as object, env.JWT_SECRET, options)
 }
 
 // Gera refresh token (14d)
 export function signRefreshToken(payload: JwtPayload): string {
   const options: SignOptions = {
-    expiresIn: toJwtExpiresIn(authConfig.refreshExpiresIn),
+    expiresIn: toJwtExpiresIn(env.REFRESH_EXPIRES_IN),
   }
-  return jwt.sign(payload as object, authConfig.refreshSecret, options)
+  return jwt.sign(payload as object, env.REFRESH_SECRET, options)
 }
 
 // Verifica access token
 export function verifyAccessToken(token: string): JwtPayload {
-  return jwt.verify(token, authConfig.jwtSecret) as JwtPayload
+  return jwt.verify(token, env.JWT_SECRET) as JwtPayload
 }
 
 // Verifica refresh token
 export function verifyRefreshToken(token: string): JwtPayload {
-  return jwt.verify(token, authConfig.refreshSecret) as JwtPayload
+  return jwt.verify(token, env.REFRESH_SECRET) as JwtPayload
 }
 
 // Hash de senha
@@ -62,30 +61,4 @@ export async function comparePassword(
   hash: string,
 ): Promise<boolean> {
   return bcrypt.compare(plain, hash)
-}
-
-export async function generateAndStoreTokens(user: {
-  id: string
-  name: string
-  email: string
-}) {
-  const payload: JwtPayload = {
-    id: user.id,
-    name: user.name,
-    email: user.email,
-  }
-  const accessToken = signAccessToken(payload)
-  const refreshToken = signRefreshToken(payload)
-
-  const decoded = verifyRefreshToken(refreshToken) as { exp: number }
-
-  await prisma.refreshToken.create({
-    data: {
-      token: refreshToken,
-      userId: user.id,
-      expiresAt: new Date(decoded.exp * 1000),
-    },
-  })
-
-  return { accessToken, refreshToken }
 }

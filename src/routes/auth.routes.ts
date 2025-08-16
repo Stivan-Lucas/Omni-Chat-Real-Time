@@ -7,7 +7,6 @@ import {
   signAccessToken,
   signRefreshToken,
   verifyRefreshToken,
-  generateAndStoreTokens,
 } from '../utils/auth.ts'
 import type { DecodedJwt, JwtPayload } from '../types/auth.ts'
 import { Texts } from '../constants/texts.ts'
@@ -170,8 +169,13 @@ export default async function AuthRoutes(app: FastifyTypedInstance) {
       try {
         const { refreshToken } = req.body
 
-        const storedToken = await prisma.refreshToken.findUnique({
-          where: { token: refreshToken },
+        // 1. Verifica se o token existe e é válido
+        const storedToken = await prisma.refreshToken.findFirst({
+          where: {
+            token: refreshToken,
+            revokedAt: null,
+            expiresAt: { gt: new Date() },
+          },
         })
 
         if (
@@ -184,6 +188,7 @@ export default async function AuthRoutes(app: FastifyTypedInstance) {
           })
         }
 
+        // 2. Verifica a assinatura do token
         let payload: JwtPayload
         try {
           payload = verifyRefreshToken(refreshToken)
@@ -193,28 +198,22 @@ export default async function AuthRoutes(app: FastifyTypedInstance) {
           })
         }
 
-        // // Revoga o token antigo
-        await prisma.refreshToken.update({
-          where: { token: refreshToken },
-          data: { revokedAt: new Date() },
-        })
-
+        // 3. Prepara o payload para novos tokens (remove campos temporais)
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { exp, iat, ...cleanPayload } = payload
 
-        // // Gera novos tokens
+        // 4. Gera novos tokens
         const newAccessToken = signAccessToken(cleanPayload)
         const newRefreshToken = signRefreshToken(cleanPayload)
-
-        app.log.debug({ newAccessToken }, 'newAccessToken')
-        app.log.debug({ newRefreshToken }, 'newRefreshToken')
-
         const decodedNew = verifyRefreshToken(newRefreshToken) as DecodedJwt
-        await prisma.refreshToken.create({
+
+        // 5. Atualiza o token existente (ao invés de criar um novo)
+        await prisma.refreshToken.update({
+          where: { id: storedToken.id }, // Agora usando o ID que é único
           data: {
             token: newRefreshToken,
-            userId: payload.id,
             expiresAt: new Date(decodedNew.exp * 1000),
+            revokedAt: null,
           },
         })
 

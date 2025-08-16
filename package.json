@@ -35,8 +35,9 @@
     "lint": "eslint ./src --ext .js,.ts,.mjs,.cjs --report-unused-disable-directives --max-warnings 0",
     "format": "prettier ./src --check && prettier ./src --write",
     "format:check": "npx prettier ./src --check",
-    "test": "dotenvx run -f .env.test -- vitest",
-    "test:watch": "dotenvx run -f .env.test -- vitest --watch",
+    "test": "dotenvx run -f .env.test -- sh -c \"prisma migrate reset --force && prisma generate && vitest\"",
+    "test:watch": "dotenvx run -f .env.test -- sh -c \"prisma generate && prisma migrate deploy && vitest --watch\"",
+    "test:reset": "dotenvx run -f .env.test -- prisma migrate reset --force",
     "test:coverage": "dotenvx run -f .env.test -- vitest run --coverage",
     "test:coverage:html": "vitest run --coverage --reporter=html",
     "prepare": "husky"
