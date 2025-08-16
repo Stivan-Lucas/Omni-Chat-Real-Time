@@ -1,9 +1,9 @@
-// src/utils/test-server.ts
+// src/lib/buildServer.ts
 import Fastify from 'fastify'
 import AuthRoutes from '../routes/auth.routes.ts'
-import { prisma } from '../lib/prisma.ts'
+import { prisma } from './prisma.ts'
 
-export function buildFastify() {
+export function buildServer() {
   const app = Fastify({
     logger: false, // desativa logs durante os testes
   })

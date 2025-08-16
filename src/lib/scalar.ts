@@ -1,8 +1,8 @@
 // src/lib/scalar.ts
-import type { FastifyInstance } from 'fastify'
 import { env } from '../config/environment.ts'
+import type { FastifyTypedInstance } from '../types/zod.ts'
 
-export default async function ScalarPlugin(app: FastifyInstance) {
+export default async function ScalarPlugin(app: FastifyTypedInstance) {
   app.get('/', { schema: { hide: true } }, async (_, reply) => {
     return reply.redirect('/docs')
   })

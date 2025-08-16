@@ -1,11 +1,11 @@
 // src/lib/swagger.ts
 import fastifySwagger from '@fastify/swagger'
-import type { FastifyInstance } from 'fastify'
 import { jsonSchemaTransform } from 'fastify-type-provider-zod'
 import { env } from '../config/environment.ts'
 import { Texts } from '../constants/texts.ts'
+import type { FastifyTypedInstance } from '../types/zod.ts'
 
-export default async function SwaggerPlugin(app: FastifyInstance) {
+export default async function SwaggerPlugin(app: FastifyTypedInstance) {
   await app.register(fastifySwagger, {
     mode: 'dynamic',
     transform: jsonSchemaTransform,

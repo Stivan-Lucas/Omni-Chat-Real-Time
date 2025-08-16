@@ -1,109 +1,100 @@
 // src/tests/auth.routes.test.ts
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
-import supertest from 'supertest'
 import { z } from 'zod'
-import { buildFastify } from '../src/utils/test-server'
+import supertest from 'supertest'
+import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { buildServer } from '../src/lib/buildServer' // ajuste se tiver um server export
 import { prisma } from '../src/lib/prisma'
 
-let app: Awaited<ReturnType<typeof buildFastify>> // ✅ corrigido
+let app: ReturnType<typeof buildServer>
+let request: ReturnType<typeof supertest>
 
 beforeAll(async () => {
-  app = await buildFastify() // ✅ agora await
+  app = buildServer()
   await app.ready()
+  request = supertest(app.server)
 })
 
 afterAll(async () => {
+  await prisma.refreshToken.deleteMany()
+  await prisma.user.deleteMany()
   await app.close()
-  // Limpa os usuários e tokens criados
-  await prisma.refreshToken.deleteMany({})
-  await prisma.user.deleteMany({})
 })
 
 describe('Auth Routes', () => {
-  const registerBodySchema = z.object({
-    name: z.string().min(4),
-    email: z.email(),
-    password: z.string().min(8),
-  })
+  let refreshToken: string
 
-  const registerResponseSchema = z.object({
+  const registerSchema = z.object({
     id: z.string(),
     name: z.string(),
-    email: z.email(),
+    email: z.string(),
     createdAt: z.string(),
   })
 
-  const loginBodySchema = z.object({
-    email: z.email(),
-    password: z.string().min(6),
-  })
-
-  const loginResponseSchema = z.object({
+  const loginSchema = z.object({
     accessToken: z.string(),
     refreshToken: z.string(),
   })
 
-  const refreshBodySchema = z.object({
-    refreshToken: z.string().min(10),
-  })
-
-  const refreshResponseSchema = loginResponseSchema // mesmo formato do login
-
-  let userData = {
-    name: 'Test User',
-    email: 'testuser@example.com',
-    password: 'supersecurepassword',
-  }
-
-  let refreshToken: string
-
   it('should register a new user', async () => {
-    // valida antes de enviar
-    registerBodySchema.parse(userData)
+    const res = await request.post('/auth/register').send({
+      name: 'Vitest User',
+      email: 'vitest@example.com',
+      password: 'password123',
+    })
 
-    const res = await supertest(app.server)
-      .post('/auth/register')
-      .send(userData)
-      .expect(201)
-
-    const data = registerResponseSchema.parse(res.body)
-
-    expect(data.name).toBe(userData.name)
-    expect(data.email).toBe(userData.email)
-    expect(new Date(data.createdAt).toString()).not.toBe('Invalid Date')
+    expect(res.status).toBe(201)
+    registerSchema.parse(res.body) // valida com Zod
   })
 
-  it('should login with registered user', async () => {
-    const loginData = {
-      email: userData.email,
-      password: userData.password,
-    }
+  it('should not register with the same email', async () => {
+    const res = await request.post('/auth/register').send({
+      name: 'Vitest User 2',
+      email: 'vitest@example.com',
+      password: 'password123',
+    })
 
-    loginBodySchema.parse(loginData)
+    expect(res.status).toBe(409)
+    expect(res.body.message).toBeDefined()
+  })
 
-    const res = await supertest(app.server)
-      .post('/auth/login')
-      .send(loginData)
-      .expect(200)
+  it('should login the user', async () => {
+    const res = await request.post('/auth/login').send({
+      email: 'vitest@example.com',
+      password: 'password123',
+    })
 
-    const data = loginResponseSchema.parse(res.body)
-    expect(data.accessToken).toBeTypeOf('string')
-    expect(data.refreshToken).toBeTypeOf('string')
-
+    expect(res.status).toBe(200)
+    const data = loginSchema.parse(res.body)
     refreshToken = data.refreshToken
   })
 
+  it('should not login with wrong password', async () => {
+    const res = await request.post('/auth/login').send({
+      email: 'vitest@example.com',
+      password: 'wrongpassword',
+    })
+
+    expect(res.status).toBe(401)
+    expect(res.body.message).toBeDefined()
+  })
+
   it('should refresh tokens', async () => {
-    const refreshData = { refreshToken }
-    refreshBodySchema.parse(refreshData)
+    const res = await request.post('/auth/refresh').send({
+      refreshToken,
+    })
 
-    const res = await supertest(app.server)
-      .post('/auth/refresh')
-      .send(refreshData)
-      .expect(200)
+    expect(res.status).toBe(200)
+    const data = loginSchema.parse(res.body)
+    expect(data.accessToken).not.toBe(refreshToken)
+    expect(data.refreshToken).not.toBe(refreshToken)
+  })
 
-    const data = refreshResponseSchema.parse(res.body)
-    expect(data.accessToken).toBeTypeOf('string')
-    expect(data.refreshToken).toBeTypeOf('string')
+  it('should fail to refresh with invalid token', async () => {
+    const res = await request.post('/auth/refresh').send({
+      refreshToken: 'invalidtoken',
+    })
+
+    expect(res.status).toBe(401)
+    expect(res.body.message).toBeDefined()
   })
 })

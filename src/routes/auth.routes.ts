@@ -1,6 +1,5 @@
 // src/routes/auth.routes.ts
 import { z } from 'zod'
-import type { FastifyInstance } from 'fastify'
 import { prisma } from '../lib/prisma.ts'
 import {
   hashPassword,
@@ -8,11 +7,13 @@ import {
   signAccessToken,
   signRefreshToken,
   verifyRefreshToken,
+  generateAndStoreTokens,
 } from '../utils/auth.ts'
 import type { DecodedJwt, JwtPayload } from '../types/auth.ts'
 import { Texts } from '../constants/texts.ts'
+import type { FastifyTypedInstance } from '../types/zod.ts'
 
-export default async function AuthRoutes(app: FastifyInstance) {
+export default async function AuthRoutes(app: FastifyTypedInstance) {
   // -----------------------------
   // Register
   // -----------------------------
@@ -41,11 +42,7 @@ export default async function AuthRoutes(app: FastifyInstance) {
     },
     async (req, reply) => {
       try {
-        const { name, email, password } = req.body as {
-          name: string
-          email: string
-          password: string
-        }
+        const { name, email, password } = req.body
 
         // Verifica se o email já existe
         const existingUser = await prisma.user.findUnique({ where: { email } })
@@ -101,10 +98,7 @@ export default async function AuthRoutes(app: FastifyInstance) {
     },
     async (req, reply) => {
       try {
-        const { email, password } = req.body as {
-          email: string
-          password: string
-        }
+        const { email, password } = req.body
 
         const user = await prisma.user.findFirst({
           where: { email, deletedAt: null },
@@ -174,7 +168,7 @@ export default async function AuthRoutes(app: FastifyInstance) {
     },
     async (req, reply) => {
       try {
-        const { refreshToken } = req.body as { refreshToken: string }
+        const { refreshToken } = req.body
 
         const storedToken = await prisma.refreshToken.findUnique({
           where: { token: refreshToken },

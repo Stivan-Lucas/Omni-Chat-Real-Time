@@ -3,6 +3,7 @@ import jwt, { type SignOptions } from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
 import { authConfig } from '../config/auth.ts'
 import type { JwtPayload } from '../types/auth.ts'
+import { prisma } from '../lib/prisma.ts'
 
 // Função utilitária para converter expiresIn em segundos (compatível com SignOptions)
 function toJwtExpiresIn(envValue: string): number {
@@ -61,4 +62,30 @@ export async function comparePassword(
   hash: string,
 ): Promise<boolean> {
   return bcrypt.compare(plain, hash)
+}
+
+export async function generateAndStoreTokens(user: {
+  id: string
+  name: string
+  email: string
+}) {
+  const payload: JwtPayload = {
+    id: user.id,
+    name: user.name,
+    email: user.email,
+  }
+  const accessToken = signAccessToken(payload)
+  const refreshToken = signRefreshToken(payload)
+
+  const decoded = verifyRefreshToken(refreshToken) as { exp: number }
+
+  await prisma.refreshToken.create({
+    data: {
+      token: refreshToken,
+      userId: user.id,
+      expiresAt: new Date(decoded.exp * 1000),
+    },
+  })
+
+  return { accessToken, refreshToken }
 }

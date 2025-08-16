@@ -1,17 +1,13 @@
 // src/modules/handleError.ts
-import type {
-  FastifyInstance,
-  FastifyError,
-  FastifyReply,
-  FastifyRequest,
-} from 'fastify'
+import type { FastifyError, FastifyReply, FastifyRequest } from 'fastify'
 import {
   hasZodFastifySchemaValidationErrors,
   isResponseSerializationError,
 } from 'fastify-type-provider-zod'
 import { Texts } from '../constants/texts.ts'
+import type { FastifyTypedInstance } from '../types/zod.ts'
 
-export default function handleError(app: FastifyInstance) {
+export default function handleError(app: FastifyTypedInstance) {
   app.setErrorHandler(
     (err: FastifyError, req: FastifyRequest, reply: FastifyReply) => {
       if (hasZodFastifySchemaValidationErrors(err)) {

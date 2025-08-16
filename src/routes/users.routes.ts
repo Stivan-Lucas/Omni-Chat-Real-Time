@@ -1,10 +1,11 @@
 // src/routes/users.routes.ts
-import type { FastifyInstance, FastifyRequest } from 'fastify'
 import { z } from 'zod'
+import type { FastifyRequest } from 'fastify'
 import { prisma } from '../lib/prisma.ts'
 import { verifyAccessToken, hashPassword } from '../utils/auth.ts'
 import type { JwtPayload } from '../types/auth.ts'
 import type { Prisma } from '@prisma/client'
+import type { FastifyTypedInstance } from '../types/zod.ts'
 
 function authGuard(req: FastifyRequest) {
   const auth = req.headers.authorization
@@ -13,7 +14,7 @@ function authGuard(req: FastifyRequest) {
   return verifyAccessToken(token)
 }
 
-export default async function UsersRoutes(app: FastifyInstance) {
+export default async function UsersRoutes(app: FastifyTypedInstance) {
   // Update user (requires JWT in header)
   app.patch(
     '/users/:id',
@@ -52,15 +53,11 @@ export default async function UsersRoutes(app: FastifyInstance) {
           .status(401)
           .send({ message: 'You can only update your own account' })
       }
-      const body = req.body as {
-        name?: string
-        email?: string
-        password?: string
-      }
+      const { email, name, password } = req.body
       const data: Prisma.UserUpdateInput = {}
-      if (body.name) data.name = body.name
-      if (body.email) data.email = body.email
-      if (body.password) data.password = await hashPassword(body.password)
+      if (name) data.name = name
+      if (email) data.email = email
+      if (password) data.password = await hashPassword(password)
 
       const updated = await prisma.user
         .update({
@@ -118,7 +115,7 @@ export default async function UsersRoutes(app: FastifyInstance) {
       } catch {
         return reply.status(401).send({ message: 'Unauthorized' })
       }
-      const { id } = req.params as { id: string }
+      const { id } = req.params
       if (payload.id !== id) {
         return reply
           .status(401)

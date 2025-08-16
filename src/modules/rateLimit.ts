@@ -1,10 +1,10 @@
 // src/modules/rateLimit.ts
 import fastifyRateLimit from '@fastify/rate-limit'
-import type { FastifyInstance } from 'fastify'
 import { env } from '../config/environment.ts'
 import { Texts } from '../constants/texts.ts'
+import type { FastifyTypedInstance } from '../types/zod.ts'
 
-export default async function RateLimited(app: FastifyInstance) {
+export default async function RateLimited(app: FastifyTypedInstance) {
   if (env.NODE_ENV === 'development') {
     app.log.info(env.RATE_LIMIT_INFO_MESSAGE)
     return
