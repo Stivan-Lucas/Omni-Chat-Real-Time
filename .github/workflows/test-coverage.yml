@@ -8,6 +8,7 @@ on:
 
 jobs:
   test:
+    name: Run tests and collect coverage
     runs-on: ubuntu-latest
 
     services:
@@ -36,11 +37,13 @@ jobs:
           --health-retries=5
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout
+        uses: actions/checkout@v4
         with:
           fetch-depth: 2
 
-      - uses: actions/setup-node@v4
+      - name: Set up Node
+        uses: actions/setup-node@v4
         with:
           node-version: 24
 
@@ -59,13 +62,15 @@ jobs:
         env:
           NODE_ENV: test
 
-      - name: Run tests with coverage
-        run: npx vitest run --coverage --reporter=junit --outputFile=junit.xml
+      - name: Run tests with coverage (lcov)
+        run: npx vitest run --coverage --coverage.reporter=lcov
         env:
           NODE_ENV: test
 
-      - name: Upload coverage reports to Codecov
+      - name: Upload results to Codecov
         uses: codecov/codecov-action@v5
         with:
-        token: ${{ secrets.CODECOV_TOKEN }}
-        slug: Stivan-Lucas/Omni-Chat-Real-Time
+          token: ${{ secrets.CODECOV_TOKEN }}
+          slug: Stivan-Lucas/Omni-Chat-Real-Time
+          files: ./coverage/lcov.info
+          fail_ci_if_error: true
