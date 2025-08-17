@@ -20,7 +20,7 @@ export const prisma: PrismaClient =
 if (env.NODE_ENV !== 'production') globalForPrisma.prisma = prisma
 
 // === Configuração inicial do banco ===
-async function initPrisma() {
+export async function initPrisma() {
   try {
     // Conecta automaticamente (opcional, Prisma conecta na primeira query)
     await prisma.$connect()

@@ -30,12 +30,12 @@ export default async function AuthRoutes(app: FastifyTypedInstance) {
           201: z.object({
             id: z.string(),
             name: z.string(),
-            email: z.string(),
+            email: z.email(),
             createdAt: z.string(),
           }),
-          400: z.object({ message: z.string() }),
-          409: z.object({ message: z.string() }),
-          500: z.object({ message: z.string() }),
+          400: z.object({ message: z.string() }), // validação
+          409: z.object({ message: z.string() }), // email já em uso
+          500: z.object({ message: z.string() }), // erro inesperado
         },
       },
     },
@@ -88,10 +88,9 @@ export default async function AuthRoutes(app: FastifyTypedInstance) {
             accessToken: z.string(),
             refreshToken: z.string(),
           }),
-          400: z.object({ message: z.string() }),
-          401: z.object({ message: z.string() }),
-          403: z.object({ message: z.string() }),
-          500: z.object({ message: z.string() }),
+          400: z.object({ message: z.string() }), // validação
+          401: z.object({ message: z.string() }), // credenciais inválidas
+          500: z.object({ message: z.string() }), // erro inesperado
         },
       },
     },
@@ -159,9 +158,9 @@ export default async function AuthRoutes(app: FastifyTypedInstance) {
             accessToken: z.string(),
             refreshToken: z.string(),
           }),
-          400: z.object({ message: z.string() }),
-          401: z.object({ message: z.string() }),
-          500: z.object({ message: z.string() }),
+          400: z.object({ message: z.string() }), // validação
+          401: z.object({ message: z.string() }), // token inválido/expirado
+          500: z.object({ message: z.string() }), // erro inesperado
         },
       },
     },
@@ -198,7 +197,7 @@ export default async function AuthRoutes(app: FastifyTypedInstance) {
           })
         }
 
-        // 3. Prepara o payload para novos tokens (remove campos temporais)
+        // 3. Remove campos temporais
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { exp, iat, ...cleanPayload } = payload
 
@@ -207,9 +206,9 @@ export default async function AuthRoutes(app: FastifyTypedInstance) {
         const newRefreshToken = signRefreshToken(cleanPayload)
         const decodedNew = verifyRefreshToken(newRefreshToken) as DecodedJwt
 
-        // 5. Atualiza o token existente (ao invés de criar um novo)
+        // 5. Atualiza o token existente
         await prisma.refreshToken.update({
-          where: { id: storedToken.id }, // Agora usando o ID que é único
+          where: { id: storedToken.id },
           data: {
             token: newRefreshToken,
             expiresAt: new Date(decodedNew.exp * 1000),

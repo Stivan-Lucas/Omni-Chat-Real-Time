@@ -5,11 +5,13 @@ import pino, { type LoggerOptions } from 'pino'
 import type { FastifyReply, FastifyRequest } from 'fastify'
 import { env } from '../config/environment.ts'
 
+// --- Criar diretório de logs ---
 const logDir = path.resolve(env.LOG_DIR)
 if (!fs.existsSync(logDir)) fs.mkdirSync(logDir, { recursive: true })
 
 const isDev = env.NODE_ENV === 'development'
 
+// --- Serializers ---
 const reqSerializer = (req: FastifyRequest) => ({
   method: req.method,
   url: req.url,
@@ -27,6 +29,7 @@ const serializers = {
   err: pino.stdSerializers.err,
 }
 
+// --- Redact paths ---
 const redactPaths = env.LOG_REDACT_PATHS
   ? env.LOG_REDACT_PATHS.split(',').map((p) => p.trim())
   : [
@@ -36,6 +39,10 @@ const redactPaths = env.LOG_REDACT_PATHS
       '*.password',
     ]
 
+// --- Nome do arquivo de log baseado no NODE_ENV ---
+const logFileName = `app.${env.NODE_ENV}.log`
+
+// --- Transportes ---
 const devTransport = {
   targets: [
     {
@@ -52,7 +59,7 @@ const devTransport = {
     {
       target: 'pino/file',
       options: {
-        destination: path.join(logDir, 'app.log'),
+        destination: path.join(logDir, logFileName),
         mkdir: true,
         append: true,
       },
@@ -66,7 +73,7 @@ const prodTransport = {
     {
       target: 'pino/file',
       options: {
-        destination: path.join(logDir, 'app.log'),
+        destination: path.join(logDir, logFileName),
         mkdir: true,
         append: true,
       },
@@ -76,7 +83,7 @@ const prodTransport = {
       target: 'pino/file',
       options: {
         dirname: logDir,
-        filename: 'app-%DATE%.log',
+        filename: `app-%DATE%-${env.NODE_ENV}.log`,
         datePattern: 'YYYY-MM-DD',
         maxFiles: env.LOG_FILE_MAX_DAYS ? `${env.LOG_FILE_MAX_DAYS}d` : '14d',
         zippedArchive: env.LOG_FILE_ZIPPED === 'true',
@@ -86,6 +93,7 @@ const prodTransport = {
   ],
 }
 
+// --- Configurações finais do logger ---
 export const loggerOptions: LoggerOptions = {
   level: env.LOG_LEVEL,
   serializers,

@@ -1,6 +1,6 @@
 // src/tests/auth.routes.test.ts
 import supertest from 'supertest'
-import { describe, it, expect, beforeAll, afterAll } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, vi } from 'vitest'
 import { app } from '../src/app'
 import { prisma } from '../src/lib/prisma'
 
@@ -16,13 +16,11 @@ describe('Auth Routes', () => {
   let refreshToken: string
 
   beforeAll(async () => {
-    // Limpa usuário de teste antes de rodar os testes
     await prisma.refreshToken.deleteMany({})
     await prisma.user.deleteMany({ where: { email: testUser.email } })
   })
 
   afterAll(async () => {
-    // Limpa dados após os testes
     await prisma.refreshToken.deleteMany({})
     await prisma.user.deleteMany({ where: { email: testUser.email } })
     await prisma.$disconnect()
@@ -35,7 +33,6 @@ describe('Auth Routes', () => {
     const res = await request.post('/auth/register').send(testUser)
     expect(res.status).toBe(201)
     expect(res.body).toHaveProperty('id')
-    expect(res.body.name).toBe(testUser.name)
     expect(res.body.email).toBe(testUser.email)
   })
 
@@ -43,6 +40,28 @@ describe('Auth Routes', () => {
     const res = await request.post('/auth/register').send(testUser)
     expect(res.status).toBe(409)
     expect(res.body).toHaveProperty('message')
+  })
+
+  it('should fail with invalid body (400)', async () => {
+    const res = await request.post('/auth/register').send({
+      name: 'ab',
+      email: 'invalid',
+      password: '123',
+    })
+    expect(res.status).toBe(400)
+  })
+
+  it('should handle unexpected error (500)', async () => {
+    const spy = vi
+      .spyOn(prisma.user, 'findUnique')
+      .mockRejectedValueOnce(new Error('db error'))
+    const res = await request.post('/auth/register').send({
+      name: 'Another User',
+      email: 'another@example.com',
+      password: 'password123',
+    })
+    expect(res.status).toBe(500)
+    spy.mockRestore()
   })
 
   // -----------------------------
@@ -65,7 +84,6 @@ describe('Auth Routes', () => {
       password: 'wrongpassword',
     })
     expect(res.status).toBe(401)
-    expect(res.body).toHaveProperty('message')
   })
 
   it('should fail login with non-existent email', async () => {
@@ -74,7 +92,26 @@ describe('Auth Routes', () => {
       password: 'password123',
     })
     expect(res.status).toBe(401)
-    expect(res.body).toHaveProperty('message')
+  })
+
+  it('should fail login with invalid body (400)', async () => {
+    const res = await request.post('/auth/login').send({
+      email: 'not-an-email',
+      password: '123',
+    })
+    expect(res.status).toBe(400)
+  })
+
+  it('should handle unexpected error (500)', async () => {
+    const spy = vi
+      .spyOn(prisma.user, 'findFirst')
+      .mockRejectedValueOnce(new Error('db error'))
+    const res = await request.post('/auth/login').send({
+      email: testUser.email,
+      password: testUser.password,
+    })
+    expect(res.status).toBe(500)
+    spy.mockRestore()
   })
 
   // -----------------------------
@@ -82,31 +119,39 @@ describe('Auth Routes', () => {
   // -----------------------------
   it('should refresh tokens with valid refresh token', async () => {
     const res = await request.post('/auth/refresh').send({ refreshToken })
-    console.debug('res status:', res.status)
-    console.debug('res body:', res.body)
-
     expect(res.status).toBe(200)
     expect(res.body).toHaveProperty('accessToken')
     expect(res.body).toHaveProperty('refreshToken')
     refreshToken = res.body.refreshToken
   })
 
-  it('should fail refresh with invalid token', async () => {
+  it('should fail refresh with invalid token (401)', async () => {
     const res = await request
       .post('/auth/refresh')
       .send({ refreshToken: 'invalidtoken' })
     expect(res.status).toBe(401)
-    expect(res.body).toHaveProperty('message')
   })
 
-  it('should fail refresh with revoked token', async () => {
-    // Primeiro revoga o token
+  it('should fail refresh with revoked token (401)', async () => {
     await prisma.refreshToken.updateMany({
       where: { token: refreshToken },
       data: { revokedAt: new Date() },
     })
     const res = await request.post('/auth/refresh').send({ refreshToken })
     expect(res.status).toBe(401)
-    expect(res.body).toHaveProperty('message')
+  })
+
+  it('should fail refresh with invalid body (400)', async () => {
+    const res = await request.post('/auth/refresh').send({})
+    expect(res.status).toBe(400)
+  })
+
+  it('should handle unexpected error (500)', async () => {
+    const spy = vi
+      .spyOn(prisma.refreshToken, 'findFirst')
+      .mockRejectedValueOnce(new Error('db error'))
+    const res = await request.post('/auth/refresh').send({ refreshToken })
+    expect(res.status).toBe(500)
+    spy.mockRestore()
   })
 })

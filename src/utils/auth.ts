@@ -1,6 +1,6 @@
 // src/utils/auth.ts
-import jwt, { type SignOptions } from 'jsonwebtoken'
 import bcrypt from 'bcryptjs'
+import jwt, { type SignOptions } from 'jsonwebtoken'
 import type { JwtPayload } from '../types/auth.ts'
 import { env } from '../config/environment.ts'
 

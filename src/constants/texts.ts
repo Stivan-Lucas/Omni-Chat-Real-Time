@@ -101,4 +101,20 @@ export const Texts = {
       },
     },
   },
+
+  userRoutes: {
+    errors: {
+      unauthorized: 'Unauthorized',
+      missingToken: 'Missing token',
+      invalidToken: 'Invalid token',
+      expiredToken: 'Token inválido ou expirado',
+      forbiddenUpdate: 'You can only update your own account',
+      forbiddenDelete: 'You can only delete your own account',
+      notFound: 'User not found',
+    },
+    success: {
+      updated: 'User updated successfully',
+      deleted: 'User deleted successfully',
+    },
+  },
 } as const
