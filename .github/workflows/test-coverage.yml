@@ -50,6 +50,13 @@ jobs:
           sed -i 's/POSTGRES_PORT=33337/POSTGRES_PORT=5432/' .env.test
           sed -i 's/REDIS_PORT=33338/REDIS_PORT=6379/' .env.test
 
+      - name: Run migrations
+        run: |
+          npx prisma generate
+          npx prisma migrate deploy
+        env:
+          NODE_ENV: test
+
       - name: Run tests with coverage
         run: npm run test:coverage
         env:
