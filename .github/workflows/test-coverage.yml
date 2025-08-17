@@ -52,8 +52,8 @@ jobs:
 
       - name: Run migrations
         run: |
-          npx prisma generate
-          npx prisma migrate deploy
+          npx dotenvx run -f .env.test -- npx prisma generate
+          npx dotenvx run -f .env.test -- npx prisma migrate deploy
         env:
           NODE_ENV: test
 
