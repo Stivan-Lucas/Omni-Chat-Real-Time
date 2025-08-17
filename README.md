@@ -84,10 +84,6 @@ npm run build && npm run start
 npm run dev
 ```
 
-Perfeito! Podemos organizar seu README na seção de testes de forma clara, mostrando como configurar o banco e executar os diferentes comandos. Aqui está uma sugestão ajustada:
-
----
-
 ### 8. Rodar os testes
 
 Antes de rodar os testes, você precisa criar o banco de dados de testes. Certifique-se de ter um arquivo `.env.test` configurado e ajuste as portas se necessário.
