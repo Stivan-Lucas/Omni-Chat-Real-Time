@@ -10,6 +10,31 @@ jobs:
   test:
     runs-on: ubuntu-latest
 
+    services:
+      postgres:
+        image: postgres:17.5-alpine
+        env:
+          POSTGRES_USER: dev_user
+          POSTGRES_PASSWORD: dev_password
+          POSTGRES_DB: omni_test
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd="pg_isready -U dev_user -d omni_test"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
+      redis:
+        image: redis:7-alpine
+        ports:
+          - 6379:6379
+        options: >-
+          --health-cmd="redis-cli ping || exit 1"
+          --health-interval=10s
+          --health-timeout=5s
+          --health-retries=5
+
     steps:
       - uses: actions/checkout@v4
 
@@ -20,8 +45,15 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Ajustar .env.test para o ambiente CI
+        run: |
+          sed -i 's/POSTGRES_PORT=33337/POSTGRES_PORT=5432/' .env.test
+          sed -i 's/REDIS_PORT=33338/REDIS_PORT=6379/' .env.test
+
       - name: Run tests with coverage
         run: npm run test:coverage
+        env:
+          NODE_ENV: test
 
       - name: Upload coverage to Codecov
         uses: codecov/codecov-action@v4
